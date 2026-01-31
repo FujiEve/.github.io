@@ -14,7 +14,7 @@
         <my-sidebar
           :items="menuItems"
           :current="currentPage"
-          :api-menu-items="apiMenuItems"
+          :apiMenuItems="apiMenuItems"
           @change-page="currentPage = $event"
         ></my-sidebar>
         <main class="main-content">
@@ -39,12 +39,20 @@
           const currentPage = ref("");
           const menuItems = ref([]);
           const renderedContent = ref("<p>Loading...</p>");
+          const apiMenuItems = ref([
+            { name: "認証について", id: "api-auth" },
+            { name: "エンドポイント一覧", id: "api-endpoints" },
+            { name: "エラーコード", id: "api-errors" },
+          ]);
 
           // --- 2. Markdown取得関数（ファイル名をもらって中身をfetch） ---
-          const fetchMarkdown = async (fileName) => {
+          const fetchMarkdown = async (fileName, type = "docs") => {
             if (!fileName) return;
-            const url = `contents/${fileName}.md`;
-            console.log("Fetching Markdown from:", url);
+            type = apiMenuItems.value.some((item) => item.id === fileName);
+
+            // typeによってフォルダを切り替える (docs か api)
+            const folder = type === "api" ? "api" : "docs";
+            const url = `./contents/${folder}/${fileName}.md`;
             try {
               const response = await fetch(url);
               if (!response.ok)
@@ -75,7 +83,7 @@
           const fetchFileList = async () => {
             const username = "FujiEve";
             const repo = ".github.io";
-            const path = "contents";
+            const path = "contents/docs";
 
             const CACHE_KEY = "github_file_list";
             const CACHE_TIME_KEY = "github_file_list_time";
@@ -128,7 +136,8 @@
           };
           // --- 4. 監視（ページ名が変わったら中身を再取得） ---
           watch(currentPage, (newVal) => {
-            fetchMarkdown(newVal);
+            const isApi = apiMenuItems.value.some((item) => item.id === newVal);
+            fetchMarkdown(newVal, isApi ? "api" : "docs");
           });
           // --- 5. 初期実行（起動時にリストを取得） ---
           onMounted(() => {
@@ -141,7 +150,15 @@
               }
             }, 800);
           });
-          return { siteTitle, currentPage, menuItems, renderedContent };
+          console.log("Docs List:", menuItems.value);
+          console.log("API List:", apiMenuItems.value);
+          return {
+            siteTitle,
+            currentPage,
+            menuItems,
+            apiMenuItems,
+            renderedContent,
+          };
         },
       });
 

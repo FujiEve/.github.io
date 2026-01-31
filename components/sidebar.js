@@ -1,5 +1,5 @@
 const MySidebar = {
-  props: ["items", "current"],
+  props: ["items", "current", "apiMenuItems"],
   template: `
     <aside class="main-sidebar">
         <div class="sidebar-section">
@@ -17,12 +17,14 @@ const MySidebar = {
         <div class="sidebar-section">
             <h2 class="category-title">API Reference</h2>
             <ul>
-                <li v-for="api in apiItems" :key="api.id" 
+                <li v-for="api in apiMenuItems"
+                    :key="api" 
                     :class="{ active: currentPage === api.id }"
-                    @click="$emit('update-page', api.id)">
-                    {{ api.name }}
+                    @click="$emit('update-page', api)">
+                    {{ api }}
                 </li>
             </ul>
+            {{ apiMenuItems }}
         </div>
     </aside>
     `,
